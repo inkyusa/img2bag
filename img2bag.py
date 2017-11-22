@@ -16,7 +16,6 @@ import ImageFile
 import yaml
 from sensor_msgs.msg import CameraInfo
 
-cameraName="realsense_rgb"
 #yaml_to_CameraInfo function was stealed from below.
 #https://gist.github.com/rossbar/ebb282c3b73c41c1404123de6cea4771#file-yaml_to_camera_info_publisher-py-L13
 def yaml_to_CameraInfo(yaml_fname):
@@ -32,7 +31,8 @@ def yaml_to_CameraInfo(yaml_fname):
     camera_info_msg.R = calib_data["rectification_matrix"]["data"]
     camera_info_msg.P = calib_data["projection_matrix"]["data"]
     camera_info_msg.distortion_model = calib_data["distortion_model"]
-    return camera_info_msg
+    camName=calib_data["camera_name"]
+    return camera_info_msg,camName
 
 def GetFilesFromDir(dir):
     '''Generates a list of files from the directory'''
@@ -58,7 +58,6 @@ def GetFilesFromDir(dir):
 def CreateMonoBag(imgs,bagname,yamlName):
     '''Creates a bag file with camera images'''
     bag =rosbag.Bag(bagname, 'w')
-
     try:
         for i in range(len(imgs)):
             print("Adding %s" % imgs[i])
@@ -78,15 +77,23 @@ def CreateMonoBag(imgs,bagname,yamlName):
             Img.header.stamp = Stamp
             Img.width = im.size[0]
             Img.height = im.size[1]
-            Img.encoding = "rgb8"
-            Img.header.frame_id = "camera_rgb_optical_frame"
-            Img_data = [pix for pixdata in im.getdata() for pix in pixdata]
+            if im.mode=='RGB': #(3x8-bit pixels, true color)
+              Img.encoding = "rgb8"
+              Img.header.frame_id = "camera_rgb_optical_frame"
+              Img.step = Img.width*3
+              Img_data = [pix for pixdata in im.getdata() for pix in pixdata]
+            elif im.mode=='L': #(8-bit pixels, black and white)
+              Img.encoding = "mono8"
+              Img.header.frame_id = "camera_gray_optical_frame"
+              Img.step = Img.width
+              Img_data=[pix for pixdata in [im.getdata()] for pix in pixdata]
             Img.data = Img_data
-            Img.step = Img.width*3
-
-            calib=yaml_to_CameraInfo(yamlName)
+            [calib, cameraName]=yaml_to_CameraInfo(yamlName)
             calib.header.stamp = Stamp
-            calib.header.frame_id = "camera_rgb_optical_frame"
+            if im.mode=='RGB':
+              calib.header.frame_id = "camera_rgb_optical_frame"
+            elif im.mode=='L':
+              calib.header.frame_id = "camera_gray_optical_frame"
             bag.write( cameraName + '/camera_info', calib, Stamp)
             bag.write( cameraName + '/image_raw', Img, Stamp)
     finally:
@@ -96,11 +103,11 @@ def CreateBag(args):
     '''Creates the actual bag file by successively adding images'''
     all_imgs, left_imgs, right_imgs = GetFilesFromDir(args[0])
     if len(all_imgs) <= 0:
-        print("No images found in %s" % args[0])
+        print("No images found in %s" % args[1])
         exit()
     else:
         # create bagfile with mono camera image stream
-        CreateMonoBag(all_imgs, args[2], args[1])        
+        CreateMonoBag(all_imgs, args[2], args[1])
 
 if __name__ == "__main__":
     if len( sys.argv ) == 4:

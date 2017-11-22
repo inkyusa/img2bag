@@ -1,0 +1,23 @@
+#Micasense sequoia RGB camera intrinsic file obintaed output from pix4D green camera.
+#These can be differ for R, and B camera.
+
+image_width: 480
+image_height: 360
+camera_name: sequoia_rgb
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1665.14, 0.0, 606.66, 0.0, 1665.14, 488.61, 0.0, 0.0, 1.0]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0, 1,0.008330, -0.148399, 0.0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1665.14, 0.0, 606.66, 0.0, 0.0, 1665.14, 488.61, 0.0, 0.0, 0.0, 1.0, 0.0]

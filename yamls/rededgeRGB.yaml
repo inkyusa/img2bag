@@ -1,0 +1,23 @@
+#Micasense redEdge RGB camera intrinsic file obintaed output from pix4D green camera.
+#These can be differ for R, and B camera.
+
+image_width: 480
+image_height: 360
+camera_name: rededge_rgb
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1440.872, 0.0, 651.838, 0.0, 1440.872, 465.006, 0.0, 0.0, 1.0]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.097, 0.138,-0.019, 0, 0.0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1440.872, 0.0, 651.838, 0.0, 0.0, 1440.872, 465.006, 0.0, 0.0, 0.0, 1.0, 0.0]
