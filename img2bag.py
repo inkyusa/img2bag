@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 #Original source from
 #https://answers.ros.org/question/11537/creating-a-bag-file-out-of-a-image-sequence/
@@ -12,7 +12,8 @@ import roslib
 import rospy
 roslib.load_manifest('sensor_msgs')
 from sensor_msgs.msg import Image
-import ImageFile
+#import ImageFile
+from PIL import ImageFile
 import yaml
 from sensor_msgs.msg import CameraInfo
 
@@ -61,7 +62,7 @@ def CreateMonoBag(imgs,bagname,yamlName):
     try:
         for i in range(len(imgs)):
             print("Adding %s" % imgs[i])
-            fp = open( imgs[i], "r" )
+            fp = open( imgs[i], "rb" )
             p = ImageFile.Parser()
 
             while 1:
