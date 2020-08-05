@@ -16,6 +16,7 @@ from sensor_msgs.msg import Image
 from PIL import ImageFile
 import yaml
 from sensor_msgs.msg import CameraInfo
+from tqdm import tqdm
 
 #yaml_to_CameraInfo function was stealed from below.
 #https://gist.github.com/rossbar/ebb282c3b73c41c1404123de6cea4771#file-yaml_to_camera_info_publisher-py-L13
@@ -60,8 +61,8 @@ def CreateMonoBag(imgs,bagname,yamlName):
     '''Creates a bag file with camera images'''
     bag =rosbag.Bag(bagname, 'w')
     try:
-        for i in range(len(imgs)):
-            print("Adding %s" % imgs[i])
+        for i in tqdm(range(len(imgs))):
+            #print("Adding %s" % imgs[i])
             fp = open( imgs[i], "rb" )
             p = ImageFile.Parser()
 
@@ -85,12 +86,14 @@ def CreateMonoBag(imgs,bagname,yamlName):
               Img.encoding = "rgb8"
               Img.header.frame_id = "camera_rgb_optical_frame"
               Img.step = Img.width*3
-              Img_data = [pix for pixdata in im.getdata() for pix in pixdata]
+              Img_data = [pix for pixdata in im_resized.getdata()
+                          for pix in pixdata]
             elif im_resized.mode == 'L':  # (8-bit pixels, black and white)
               Img.encoding = "mono8"
               Img.header.frame_id = "camera_gray_optical_frame"
               Img.step = Img.width
-              Img_data=[pix for pixdata in [im.getdata()] for pix in pixdata]
+              Img_data = [pix for pixdata in [im_resized.getdata()]
+                          for pix in pixdata]
             Img.data = Img_data
             
             calib.header.stamp = Stamp
