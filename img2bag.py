@@ -72,28 +72,31 @@ def CreateMonoBag(imgs,bagname,yamlName):
                 p.feed(s)
 
             im = p.close()
+            [calib, cameraName] = yaml_to_CameraInfo(yamlName)
+            im_resized = im.resize((calib.width, calib.height))
+
 
             Stamp = rospy.rostime.Time.from_sec(time.time())
             Img = Image()
             Img.header.stamp = Stamp
-            Img.width = im.size[0]
-            Img.height = im.size[1]
-            if im.mode=='RGB': #(3x8-bit pixels, true color)
+            Img.width = im_resized.size[0]
+            Img.height = im_resized.size[1]
+            if im_resized.mode == 'RGB':  # (3x8-bit pixels, true color)
               Img.encoding = "rgb8"
               Img.header.frame_id = "camera_rgb_optical_frame"
               Img.step = Img.width*3
               Img_data = [pix for pixdata in im.getdata() for pix in pixdata]
-            elif im.mode=='L': #(8-bit pixels, black and white)
+            elif im_resized.mode == 'L':  # (8-bit pixels, black and white)
               Img.encoding = "mono8"
               Img.header.frame_id = "camera_gray_optical_frame"
               Img.step = Img.width
               Img_data=[pix for pixdata in [im.getdata()] for pix in pixdata]
             Img.data = Img_data
-            [calib, cameraName]=yaml_to_CameraInfo(yamlName)
+            
             calib.header.stamp = Stamp
-            if im.mode=='RGB':
+            if im_resized.mode == 'RGB':
               calib.header.frame_id = "camera_rgb_optical_frame"
-            elif im.mode=='L':
+            elif im_resized.mode == 'L':
               calib.header.frame_id = "camera_gray_optical_frame"
             bag.write( cameraName + '/camera_info', calib, Stamp)
             bag.write( cameraName + '/image_raw', Img, Stamp)
